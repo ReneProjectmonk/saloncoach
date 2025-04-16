@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>DÉCAAR Salon Omzet Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background-color: #f9f9f9;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+    }
+    input {
+      width: 100%;
+      padding: 6px;
+      margin-top: 4px;
+    }
+    .result, .scenario {
+      background-color: #e8f5e9;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    h2 {
+      margin-top: 30px;
+    }
+    .bold { font-weight: bold; }
+    .scenario { background-color: #fff9e6; }
+  </style>
+</head>
+<body>
+  <h1>DÉCAAR Salon Omzet Calculator</h1>
+
+  <h2>Huidige situatie - Hoofdbehandelingen (DÉCAAR)</h2>
+  <label>Klanten per maand:
+    <input type="number" id="decaar_clients" value="60">
+  </label>
+  <label>Behandelingen per klant per jaar:
+    <input type="number" id="decaar_freq" value="4">
+  </label>
+  <label>Gemiddelde prijs per behandeling (€):
+    <input type="number" id="decaar_price" value="75">
+  </label>
+
+  <h2>Productverkoop (alleen bij DÉCAAR)</h2>
+  <label>Aantal klanten dat per jaar een product koopt:
+    <input type="number" id="product_clients" value="30">
+  </label>
+  <label>Gemiddeld aantal keer per jaar dat deze klanten een product kopen:
+    <input type="number" id="product_per_year" value="2">
+  </label>
+  <label>Gemiddelde waarde per verkoop (€):
+    <input type="number" id="product_value" value="45">
+  </label>
+
+  <h2>Huidige situatie - Pedicurebehandelingen</h2>
+  <label>Klanten per maand:
+    <input type="number" id="pedi_clients" value="40">
+  </label>
+  <label>Behandelingen per klant per jaar:
+    <input type="number" id="pedi_freq" value="4">
+  </label>
+  <label>Gemiddelde prijs per behandeling (€):
+    <input type="number" id="pedi_price" value="35">
+  </label>
+
+  <h2>Simulatie</h2>
+  <label>Aantal pedicureklanten dat overstapt naar DÉCAAR:
+    <input type="number" id="shift_clients" value="10">
+  </label>
+  <label>Extra aantal klanten dat een product koopt (bovenop huidig):
+    <input type="number" id="extra_product_clients" value="20">
+  </label>
+
+  <div class="result" id="output"></div>
+  <div class="scenario" id="scenarioOutput"></div>
+
+  <script>
+    const inputs = document.querySelectorAll("input");
+    const output = document.getElementById("output");
+    const scenarioOutput = document.getElementById("scenarioOutput");
+
+    function calculate() {
+      const decaarClients = parseFloat(document.getElementById("decaar_clients").value);
+      const decaarFreq = parseFloat(document.getElementById("decaar_freq").value);
+      const decaarPrice = parseFloat(document.getElementById("decaar_price").value);
+
+      const pediClients = parseFloat(document.getElementById("pedi_clients").value);
+      const pediFreq = parseFloat(document.getElementById("pedi_freq").value);
+      const pediPrice = parseFloat(document.getElementById("pedi_price").value);
+
+      const productClients = parseFloat(document.getElementById("product_clients").value);
+      const productPerYear = parseFloat(document.getElementById("product_per_year").value);
+      const productValue = parseFloat(document.getElementById("product_value").value);
+
+      const shiftClients = parseFloat(document.getElementById("shift_clients").value);
+      const extraProductClients = parseFloat(document.getElementById("extra_product_clients").value);
+
+      // Huidige situatie
+      const decaarTreatments = decaarClients * decaarFreq;
+      const pediTreatments = pediClients * pediFreq;
+      const omzetDecaar = decaarTreatments * decaarPrice;
+      const omzetPedi = pediTreatments * pediPrice;
+      const omzetProducten = productClients * productPerYear * productValue;
+      const totaalOmzet = omzetDecaar + omzetPedi + omzetProducten;
+
+      // Scenario
+      const newDecaarClients = decaarClients + shiftClients;
+      const newPediClients = Math.max(pediClients - shiftClients, 0);
+      const newDecaarTreatments = newDecaarClients * decaarFreq;
+      const newPediTreatments = newPediClients * pediFreq;
+      const newOmzetDecaar = newDecaarTreatments * decaarPrice;
+      const newOmzetPedi = newPediTreatments * pediPrice;
+      const newOmzetProducten = (productClients + extraProductClients) * productPerYear * productValue;
+      const newTotaalOmzet = newOmzetDecaar + newOmzetPedi + newOmzetProducten;
+
+      output.innerHTML = `
+        <span class="bold">Huidige jaaromzet:</span><br>
+        DÉCAAR behandelingen: €${omzetDecaar.toLocaleString('nl-NL')}<br>
+        Pedicure behandelingen: €${omzetPedi.toLocaleString('nl-NL')}<br>
+        Productverkoop: €${omzetProducten.toLocaleString('nl-NL')}<br><br>
+        <span class="bold">Totaal: €${totaalOmzet.toLocaleString('nl-NL')}</span>
+      `;
+
+      scenarioOutput.innerHTML = `
+        <span class="bold">Scenario jaaromzet:</span><br>
+        Nieuwe DÉCAAR klanten: ${newDecaarClients} (was ${decaarClients})<br>
+        Nieuwe pedicure klanten: ${newPediClients} (was ${pediClients})<br>
+        Klanten die product kopen: ${productClients + extraProductClients} (was ${productClients})<br><br>
+        DÉCAAR behandelingen: €${newOmzetDecaar.toLocaleString('nl-NL')}<br>
+        Pedicure behandelingen: €${newOmzetPedi.toLocaleString('nl-NL')}<br>
+        Productverkoop: €${newOmzetProducten.toLocaleString('nl-NL')}<br><br>
+        <span class="bold">Totaal: €${newTotaalOmzet.toLocaleString('nl-NL')}<br>
+        Verschil: €${(newTotaalOmzet - totaalOmzet).toLocaleString('nl-NL')} extra omzet</span>
+      `;
+    }
+
+    inputs.forEach(input => input.addEventListener("input", calculate));
+    calculate();
+  </script>
+</body>
+</html>
